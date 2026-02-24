@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator KPR Jasmine</title>
+
+<style>
+body {
+  font-family: Arial;
+  background:#f2f2f2;
+  text-align:center;
+  padding:20px;
+}
+.container {
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  max-width:420px;
+  margin:auto;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+input {
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+}
+button {
+  padding:12px;
+  width:100%;
+  background:#007bff;
+  color:white;
+  border:none;
+  border-radius:6px;
+}
+.result {
+  margin-top:20px;
+  text-align:left;
+  background:#fafafa;
+  padding:15px;
+  border-radius:8px;
+}
+.error {
+  color:red;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2>Kalkulator KPR Jasmine</h2>
+
+<p><strong>Harga Rumah: Rp 325.000.000</strong></p>
+
+<label>Lama Angsuran (Tahun)</label>
+<input type="number" id="tahun" placeholder="Contoh: 20" min="5" max="30">
+
+<div class="error" id="error"></div>
+
+<button onclick="hitung()">Hitung</button>
+
+<div class="result" id="output" style="display:none;">
+  <div id="detail"></div>
+  <p><strong>Total Dibayar:</strong><br>
+  <span id="total"></span></p>
+</div>
+
+</div>
+
+<script>
+
+const pokokAwal = 325000000;
+const bungaList = [5.99,7.49,9.99,12.49,12.99];
+
+function anuitas(P, bungaTahunan, sisaBulan){
+  let i = bungaTahunan/100/12;
+  return P * (i * Math.pow(1+i,sisaBulan)) / (Math.pow(1+i,sisaBulan) - 1);
+}
+
+function hitung(){
+
+  let tahun = parseInt(document.getElementById("tahun").value);
+  let errorDiv = document.getElementById("error");
+  errorDiv.innerHTML = "";
+
+  if(isNaN(tahun) || tahun < 5 || tahun > 30){
+    errorDiv.innerHTML = "Masukkan tenor antara 5 - 30 tahun.";
+    document.getElementById("output").style.display = "none";
+    return;
+  }
+
+  let totalBulan = tahun * 12;
+  let sisaPokok = pokokAwal;
+  let totalBayar = 0;
+  let html = "";
+
+  for(let t=1; t<=tahun; t++){
+
+    let bunga = (t<=5) ? bungaList[t-1] : 12.99;
+    let sisaBulan = totalBulan - (t-1)*12;
+
+    let cicilan = anuitas(sisaPokok, bunga, sisaBulan);
+
+    if(t <= 5){
+      html += "<p><strong>Cicilan per bulan Tahun ke-"+t+
+              " ("+bunga+"%)</strong><br> Rp "+
+              Math.round(cicilan).toLocaleString("id-ID")+"</p>";
+    }
+
+    for(let m=1; m<=12 && (t-1)*12+m<=totalBulan; m++){
+      let i = bunga/100/12;
+      let bungaBulanan = sisaPokok * i;
+      let pokokBayar = cicilan - bungaBulanan;
+      sisaPokok -= pokokBayar;
+      totalBayar += cicilan;
+    }
+  }
+
+  document.getElementById("detail").innerHTML = html;
+  document.getElementById("total").innerHTML =
+    "Rp " + Math.round(totalBayar).toLocaleString("id-ID");
+
+  document.getElementById("output").style.display = "block";
+}
+
+</script>
+
+</body>
+</html>
